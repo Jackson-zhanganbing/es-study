@@ -1,15 +1,15 @@
 package com.zab.es;
 
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
+import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.AdminClient;
-import org.elasticsearch.client.IndicesAdminClient;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.ToXContent;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -17,7 +17,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.HashMap;
 
 @RestController
@@ -25,7 +24,7 @@ import java.util.HashMap;
 public class TestController {
 
     @Autowired
-    private TransportClient client;
+    private RestHighLevelClient client;
 
     @PostMapping("/testInsert")
     public Object testInsert(@RequestBody HashMap<String, Object> map) throws Exception {
@@ -37,27 +36,33 @@ public class TestController {
                 .field("about", map.get("about"))
                 .field("interests", map.get("interests"))
                 .endObject();
-        IndexResponse response = client.prepareIndex(map.get("index").toString(), map.get("type").toString(), map.get("id").toString()).setSource(contentBuilder).get();
-        return response.status();
+
+        IndexRequest indexRequest = new IndexRequest(map.get("index").toString()).id(map.get("id").toString()).source(contentBuilder);
+        client.index(indexRequest, RequestOptions.DEFAULT);
+        return indexRequest;
     }
 
     /**
      * es 面向文档搜索，层级关系：index--->type--->id
      * 指定index、type和id搜索，index（数据库），type（数据表），id
      * <p>
-     * 对应url操作：http://192.168.91.201:9200/caeri/employee/1
+     * 对应url操作：http://192.168.242.200:9200/caeri/employee/1
      */
     @PostMapping("/querySomeOne")
     public Object querySomeOne(@RequestBody HashMap<String, Object> map) throws Exception {
-        GetResponse documentFields = client.prepareGet(map.get("index").toString(), map.get("type").toString(), map.get("id").toString()).get();
-        return documentFields;
+        GetRequest getRequest = new GetRequest(map.get("index").toString(),  map.get("id").toString());
+        GetResponse getResponse = client.get(getRequest, RequestOptions.DEFAULT);
+        if (getResponse.isExists()) {
+            return getResponse.getSourceAsMap();
+        }
+        return null;
     }
 
-    /**
+    /*  *//**
      * 指定index、type和文档中的某字段 搜索
      * <p>
-     * 对应url操作：http://192.168.91.201:9200/caeri/employee/_search?q=last_name:Smith
-     */
+     * 对应url操作：http://192.168.242.200:9200/caeri/employee/_search?q=last_name:Smith
+     *//*
     @PostMapping("/querySimple")
     public Object querySimple(@RequestBody HashMap<String, Object> map) throws Exception {
         // 指定索引和type
@@ -68,6 +73,6 @@ public class TestController {
         SearchResponse response = builder.execute().actionGet();
         return response;
     }
-
+*/
 
 }
