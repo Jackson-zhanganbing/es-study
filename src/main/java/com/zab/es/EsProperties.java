@@ -23,4 +23,6 @@ public class EsProperties {
     private String password;
     @Value("${es.fingerprint}")
     private String fingerprint;
+    @Value("${es.scheme}")
+    private String scheme;
 }

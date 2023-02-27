@@ -1,5 +1,6 @@
 package com.zab.es;
 
+import cn.hutool.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,6 +19,11 @@ public class TestController {
     @PostMapping("/test")
     public Object testInsert(@RequestBody HashMap<String, Object> map) throws Exception {
         return client.query();
+    }
+
+    @PostMapping("/insertOne")
+    public Object insertOneIndex(@RequestBody JSONObject json) throws Exception {
+        return client.insertOneIndex(json.getStr("index"), json);
     }
 
 

@@ -1,6 +1,7 @@
 es:
   host: localhost
   port: 9200
+  scheme: https
   login: elastic
   password: iZcj2oxL5qmzriId2lmr
   fingerprint: 81bd8a63a65be7aaa1451cdbd26cef71d51f50b006e65411fb09f7db3053e82d
