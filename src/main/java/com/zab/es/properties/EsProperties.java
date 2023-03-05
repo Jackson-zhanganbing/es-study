@@ -1,4 +1,4 @@
-package com.zab.es;
+package com.zab.es.properties;
 
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;

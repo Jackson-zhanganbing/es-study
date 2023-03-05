@@ -1,6 +1,7 @@
 package com.zab.es;
 
 import cn.hutool.json.JSONObject;
+import com.zab.es.util.EsClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,8 +26,6 @@ public class TestController {
     public Object insertOneIndex(@RequestBody JSONObject json) throws Exception {
         return client.insertOneIndex(json.getStr("index"), json);
     }
-
-
 
 
 }
