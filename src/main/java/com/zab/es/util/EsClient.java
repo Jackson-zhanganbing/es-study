@@ -3,14 +3,14 @@ package com.zab.es.util;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.IndexRequest;
-import co.elastic.clients.elasticsearch.core.IndexResponse;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.*;
+import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.TransportUtils;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
+import com.zab.es.carserial.entity.CarSerialBrand;
 import com.zab.es.properties.EsProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHost;
@@ -26,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * 封装es 8.5 客户端工具
@@ -94,7 +95,7 @@ public class EsClient {
         }
     }
 
-    public void sniffer(){
+    public void sniffer() {
         ElasticsearchClient esClient = getEsClient();
 
     }
@@ -106,7 +107,7 @@ public class EsClient {
                                 .nested(t -> t
                                         .path("province")
                                         .query(p -> p.match(
-                                                                  m -> m.field("province.name").query("北京")
+                                                        m -> m.field("province.name").query("北京")
                                                 )
 
                                         )
@@ -132,6 +133,40 @@ public class EsClient {
         IndexResponse response = getEsClient().index(request);
 
         log.info("Indexed with version " + response.version());
+        return true;
+    }
+
+    public boolean bulk(List<CarSerialBrand> carSerialBrands) {
+
+        BulkRequest.Builder br = new BulkRequest.Builder();
+
+        for (CarSerialBrand product : carSerialBrands) {
+            br.operations(op -> op
+                    .index(idx -> idx
+                            .index("car_serial_brand")
+                            .id(product.getId().toString())
+                            .document(product)
+                    )
+            );
+        }
+
+        BulkResponse result = null;
+        try {
+            result = getEsClient().bulk(br.build());
+        } catch (IOException e) {
+            log.error("bulk", e);
+        }
+
+        if (result.errors()) {
+            log.error("Bulk had errors");
+            for (BulkResponseItem item: result.items()) {
+                if (item.error() != null) {
+                    log.error(item.error().reason());
+                }
+            }
+            return false;
+        }
+
         return true;
     }
 }

@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class ReadTest {
+public class CarSerialReader {
 
     @Autowired
     private ICarSerialBrandService carSerialBrandService;
@@ -28,7 +28,7 @@ public class ReadTest {
     /**
      * 最简单的读
      */
-    public void simpleRead() {
+    public void readCarSerial() {
 
         // 写法4
         String fileName = TestFileUtil.getPath() + File.separator + "demo.xlsx";
