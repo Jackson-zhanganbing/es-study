@@ -5,3 +5,9 @@ es:
   login: elastic
   password: iZcj2oxL5qmzriId2lmr
   fingerprint: 81bd8a63a65be7aaa1451cdbd26cef71d51f50b006e65411fb09f7db3053e82d
+spring:
+  datasource:
+    url: jdbc:mysql://81.68.137.141:3306/zab?characterEncoding=utf8&characterSetResults=utf8&autoReconnect=true&failOverReadOnly=false
+    username: root
+    password: 20103852
+    driver-class-name: com.mysql.jdbc.Driver

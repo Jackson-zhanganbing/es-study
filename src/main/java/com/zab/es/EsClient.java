@@ -20,12 +20,14 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.sniff.ElasticsearchNodesSniffer;
+import org.elasticsearch.client.sniff.SniffOnFailureListener;
+import org.elasticsearch.client.sniff.Sniffer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
-import java.util.Map;
 
 /**
  * 封装es 8.5 客户端工具
@@ -56,13 +58,29 @@ public class EsClient {
                             AuthScope.ANY, new UsernamePasswordCredentials(properties.getLogin(), properties.getPassword())
                     );
 
+                    SniffOnFailureListener listener = new SniffOnFailureListener();
+
                     RestClient restClient = RestClient
                             .builder(new HttpHost(properties.getHost(), properties.getPort(), properties.getScheme()))
                             .setHttpClientConfigCallback(hc -> hc
                                     .setSSLContext(sslContext)
                                     .setDefaultCredentialsProvider(credsProv)
-                            )
+                            ).setFailureListener(listener)
                             .build();
+
+                    ElasticsearchNodesSniffer elasticsearchNodesSniffer = new ElasticsearchNodesSniffer(restClient,
+                            ElasticsearchNodesSniffer.DEFAULT_SNIFF_REQUEST_TIMEOUT,
+                            ElasticsearchNodesSniffer.Scheme.HTTPS);
+                    //sniffer可以嗅探到加入es集群的其他节点
+                    //region Description
+                    Sniffer sniffer = Sniffer.builder(restClient)
+                            .setSniffIntervalMillis(5000)
+                            .setSniffAfterFailureDelayMillis(30000)
+                            .setNodesSniffer(elasticsearchNodesSniffer)
+                            .build();
+
+                    listener.setSniffer(sniffer);
+                    //endregion
                     // Create the transport and the API client
                     ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
                     client = new ElasticsearchClient(transport);
@@ -76,6 +94,11 @@ public class EsClient {
         } else {
             return client;
         }
+    }
+
+    public void sniffer(){
+        ElasticsearchClient esClient = getEsClient();
+
     }
 
     public String query() throws IOException {
