@@ -19,7 +19,7 @@ public class TestController {
 
     @PostMapping("/test")
     public Object testInsert(@RequestBody HashMap<String, Object> map) throws Exception {
-        return client.query();
+        return client.aggs();
     }
 
     @PostMapping("/insertOne")
