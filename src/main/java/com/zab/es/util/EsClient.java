@@ -3,10 +3,15 @@ package com.zab.es.util;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.Script;
+import co.elastic.clients.elasticsearch._types.ScriptField;
+import co.elastic.clients.elasticsearch._types.StoredScript;
 import co.elastic.clients.elasticsearch._types.aggregations.*;
 import co.elastic.clients.elasticsearch.core.*;
 import co.elastic.clients.elasticsearch.core.bulk.BulkResponseItem;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import co.elastic.clients.elasticsearch.core.search.HitsMetadata;
+import co.elastic.clients.json.JsonData;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.TransportUtils;
@@ -287,4 +292,39 @@ public class EsClient {
         BucketMetricValueAggregate bucketMetricValueAggregate = resultBucket.bucketMetricValue();
         return bucketMetricValueAggregate.toString();
     }
+
+
+    /**
+     * 创建一个script模板
+     *
+     * @author zab
+     * @date 2023/3/12 20:42
+     */
+    public boolean createScriptTemplate() throws IOException{
+        this.getEsClient().putScript(r -> r
+                .id("my_script")
+                .script(s -> s
+                        .lang("painless")
+                        .source("doc['price'].value*params.discount")
+                ));
+        return Boolean.TRUE;
+    }
+    /**
+     * 使用script模板
+     *
+     * @author zab
+     * @date 2023/3/12 20:42
+     */
+    public String useScriptTemplate() throws IOException{
+        SearchTemplateResponse<JSONObject> search = getEsClient().searchTemplate(s -> s
+                        .index("product")
+                        .id("my_script")
+                        .params("discount_price", JsonData.of("")),
+                JSONObject.class);
+        HitsMetadata<JSONObject> hits = search.hits();
+
+        return null;
+    }
+
+
 }

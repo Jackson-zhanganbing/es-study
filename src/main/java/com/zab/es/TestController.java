@@ -27,5 +27,15 @@ public class TestController {
         return client.insertOneIndex(json.getStr("index"), json);
     }
 
+    @PostMapping("/createScriptTemplate")
+    public Object createScriptTemplate() throws Exception {
+        return client.createScriptTemplate();
+    }
+
+    @PostMapping("/useScriptTemplate")
+    public Object useScriptTemplate() throws Exception {
+        return client.useScriptTemplate();
+    }
+
 
 }
